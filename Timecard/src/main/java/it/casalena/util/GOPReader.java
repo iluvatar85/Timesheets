@@ -28,7 +28,7 @@ public class GOPReader {
 
 	/**
 	 * Metodo statico che legge in Nome ed il Cognome della risorsa dal report GOP e
-	 * aggiungendo gli appropriati spazi.
+	 * gli aggiunge gli appropriati spazi.
 	 * 
 	 * @param file
 	 *            Report GOP

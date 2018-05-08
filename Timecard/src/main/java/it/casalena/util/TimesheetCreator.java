@@ -24,7 +24,7 @@ public class TimesheetCreator {
 	private static final Logger logger = LoggerFactory.getLogger(TimesheetCreator.class);
 
 	/**
-	 * Metodo statico che crea la Timesheet Snansi
+	 * Metodo statico che crea la Timesheet Anansi
 	 * 
 	 * @param exportGOP
 	 *            ReportGop
