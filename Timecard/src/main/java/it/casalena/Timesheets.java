@@ -58,28 +58,28 @@ public class Timesheets {
 		checkInitialDirs();
 
 		for (String annoString : GOP.list()) {
-			File anno = new File(FileUtils.checkEndings(GOPPathString) + FileUtils.checkEndings(annoString));
+			String annoPath = FileUtils.checkEndings(GOPPathString) + FileUtils.checkEndings(annoString);
+			File anno = new File(annoPath);
 			if (!anno.isDirectory()) {
 				continue;
 			}
 			logger.debug("Analizzo l'anno " + annoString);
 			for (String meseString : anno.list()) {
-				File mese = new File(FileUtils.checkEndings(GOPPathString) + FileUtils.checkEndings(annoString)
-						+ FileUtils.checkEndings(meseString));
+				String mesePath = annoPath + FileUtils.checkEndings(meseString);
+				File mese = new File(mesePath);
 				if (!mese.isDirectory()) {
 					continue;
 				}
 				logger.debug("Analizzo il mese " + meseString + " dell'anno " + annoString);
 				for (String exportGOPString : mese.list()) {
-					File exportGOP = new File(FileUtils.checkEndings(GOPPathString) + FileUtils.checkEndings(annoString)
-							+ FileUtils.checkEndings(meseString) + FileUtils.checkEndings(exportGOPString));
+					String exportGOPPath = mesePath + FileUtils.checkEndings(exportGOPString);
+					File exportGOP = new File(exportGOPPath);
 					if (!exportGOP.isFile()) {
 						continue;
 					}
 					logger.debug("Analizzo il file " + exportGOPString);
 					if (!GOPReader.checkData(exportGOP, meseString, annoString)) {
-						logger.warn("File " + GOPPathString + "\\" + annoString + "\\" + meseString + "\\"
-								+ exportGOPString + " in  posizione sbagliata.");
+						logger.warn("File " + exportGOPPath + " in  posizione sbagliata.");
 						continue;
 					}
 					TimesheetCreator.createTimeSheets(exportGOP, template, annoString, meseString);
