@@ -44,6 +44,9 @@ public class GOPReader {
 			HSSFSheet sheet = myWorkBook.getSheetAt(0);
 			nomeAttaccato = sheet.getRow(Constants.rigaNomeRisorsa).getCell(Constants.colonnaNomeRisorsa)
 					.getStringCellValue();
+			if(nomeAttaccato == null || "".equals(nomeAttaccato) || nomeAttaccato.contains(" ")) {
+				return nomeAttaccato;
+			}
 			String[] words = nomeAttaccato.split("(?=[A-Z])");
 			for (int i = 0; i < words.length; i++) {
 				nome += words[i];
