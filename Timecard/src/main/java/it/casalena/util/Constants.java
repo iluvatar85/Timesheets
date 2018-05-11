@@ -11,10 +11,10 @@ public class Constants {
 
 	public static final String FORMAT = "dd/MM/yyyy";
 	public static final SimpleDateFormat SDF = new SimpleDateFormat(FORMAT);
-	
+
 	public static final String confPath = "C:\\appConf\\Anansi\\";
 	public static final String confFileName = "timesheet.properties";
-	
+
 	// GOP
 	public static final int rigaDataInizio = 5;
 	public static final int rigaGiorni = 9;
@@ -38,8 +38,5 @@ public class Constants {
 	public static final int rigaTimesheetOreLavorate = 13;
 	public static final int colonnaTimesheetDescrizione = 7;
 	public static final int colonnaTimesheetNome = 5;
-	
-	
-	
-	
+
 }

@@ -44,9 +44,10 @@ public class GOPReader {
 			HSSFSheet sheet = myWorkBook.getSheetAt(0);
 			nomeAttaccato = sheet.getRow(Constants.rigaNomeRisorsa).getCell(Constants.colonnaNomeRisorsa)
 					.getStringCellValue();
-			if(nomeAttaccato == null || "".equals(nomeAttaccato) || nomeAttaccato.contains(" ")) {
+			if(nomeAttaccato == null || "".equals(nomeAttaccato)) {
 				return nomeAttaccato;
 			}
+			nomeAttaccato = nomeAttaccato.replaceAll("\\s+","");
 			String[] words = nomeAttaccato.split("(?=[A-Z])");
 			for (int i = 0; i < words.length; i++) {
 				nome += words[i];
@@ -170,7 +171,11 @@ public class GOPReader {
 						Integer ore = Integer.parseInt(cell.getStringCellValue());
 						Calendar calData = new GregorianCalendar();
 						calData.setTime(data);
-						giorni.put(calData, ore);
+						if (giorni.containsKey(calData)) {
+							giorni.put(calData, giorni.get(calData) + ore);
+						} else {
+							giorni.put(calData, ore);
+						}
 					}
 				}
 			} catch (Exception e) {
