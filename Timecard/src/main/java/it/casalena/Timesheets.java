@@ -27,7 +27,7 @@ import it.casalena.util.TimesheetCreator;
  * ANNO/MESE/file.xls
  *
  * @author iluva
- * @version 1.0.0
+ * @version 1.0.1
  * @since 2018-05-07
  */
 
@@ -90,10 +90,10 @@ public class Timesheets {
 	}
 
 	private static void loadProp() {
-		directoryRootPathString = Config.getProperty("directoryRootPathString");
-		templatePathString = directoryRootPathString + Config.getProperty("templatePathString");
-		timecardPathString = directoryRootPathString + Config.getProperty("timecardPathString");
-		GOPPathString = directoryRootPathString + Config.getProperty("GOPPathString");
+		directoryRootPathString = FileUtils.checkEndings(Config.getProperty("directoryRootPathString"));
+		templatePathString = directoryRootPathString + FileUtils.checkEndings(Config.getProperty("templatePathString"));
+		timecardPathString = directoryRootPathString + FileUtils.checkEndings(Config.getProperty("timecardPathString"));
+		GOPPathString = directoryRootPathString + FileUtils.checkEndings(Config.getProperty("GOPPathString"));
 		templateFileName = Config.getProperty("templateFileName");
 		logbackFileName = Config.getProperty("logbackFileName");
 		templateFilePath = templatePathString + templateFileName;
@@ -132,9 +132,9 @@ public class Timesheets {
 	}
 
 	private static void checkInitialDirs() {
-		template = new File(FileUtils.checkEndings(templateFilePath));
-		timecards = new File(FileUtils.checkEndings(timecardPathString));
-		GOP = new File(FileUtils.checkEndings(GOPPathString));
+		template = new File(templateFilePath);
+		timecards = new File(timecardPathString);
+		GOP = new File(GOPPathString);
 		if (!template.exists() || !template.isFile()) {
 			logger.error("Template file " + templateFilePath + " non esistente.");
 			System.exit(1);
