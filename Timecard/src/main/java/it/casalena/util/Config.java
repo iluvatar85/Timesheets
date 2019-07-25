@@ -23,7 +23,7 @@ public class Config {
 	static {
 		InputStream input = null;
 		try {
-			input = new FileInputStream(FileUtils.checkEndings(Constants.confPath) + Constants.confFileName);
+			input = new FileInputStream(FileUtil.checkEndings(Constants.confPath) + Constants.confFileName);
 			prop.load(input);
 		} catch (IOException ex) {
 			logger.error("Errore nel caricamento del file di properties", ex);

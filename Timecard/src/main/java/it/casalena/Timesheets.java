@@ -14,7 +14,7 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import it.casalena.util.Config;
 import it.casalena.util.Constants;
-import it.casalena.util.FileUtils;
+import it.casalena.util.FileUtil;
 import it.casalena.util.GOPReader;
 import it.casalena.util.TimesheetCreator;
 
@@ -40,9 +40,12 @@ public class Timesheets {
 	private static String timecardPathString = null;
 	private static String GOPPathString = null;
 	private static String templateFileName = null;
+	private static String templateRagruppatoFileName = null;
 	private static String templateFilePath = null;
+	private static String templateRagruppatoFilePath = null;
 	private static String logbackFileName;
 	private static File template;
+	private static File templateRagruppato;
 	private static File timecards;
 	private static File GOP;
 
@@ -58,21 +61,35 @@ public class Timesheets {
 		checkInitialDirs();
 
 		for (String annoString : GOP.list()) {
-			String annoPath = FileUtils.checkEndings(GOPPathString) + FileUtils.checkEndings(annoString);
+			String annoPath = FileUtil.checkEndings(GOPPathString) + FileUtil.checkEndings(annoString);
 			File anno = new File(annoPath);
 			if (!anno.isDirectory()) {
 				continue;
 			}
 			logger.debug("Analizzo l'anno " + annoString);
 			for (String meseString : anno.list()) {
-				String mesePath = annoPath + FileUtils.checkEndings(meseString);
+				String mesePath = annoPath + FileUtil.checkEndings(meseString);
 				File mese = new File(mesePath);
 				if (!mese.isDirectory()) {
 					continue;
 				}
 				logger.debug("Analizzo il mese " + meseString + " dell'anno " + annoString);
+
+				boolean skip = TimesheetCreator.checkTimesheetRaggruppato(annoString, meseString);
+				if (skip) {
+					continue;
+				}
+
+				// eseguo la creazione del timesheet ragruppato
+				try {
+					TimesheetCreator.createTimeSheetsRagruppato(mese, templateRagruppato, annoString, meseString);
+				} catch (Exception e) {
+					logger.error("Errore", e);
+				}
+
+				// eseguo la creazione dei timesheet singoli
 				for (String exportGOPString : mese.list()) {
-					String exportGOPPath = mesePath + FileUtils.checkEndings(exportGOPString);
+					String exportGOPPath = mesePath + FileUtil.checkEndings(exportGOPString);
 					File exportGOP = new File(exportGOPPath);
 					if (!exportGOP.isFile()) {
 						continue;
@@ -90,13 +107,15 @@ public class Timesheets {
 	}
 
 	private static void loadProp() {
-		directoryRootPathString = FileUtils.checkEndings(Config.getProperty("directoryRootPathString"));
-		templatePathString = directoryRootPathString + FileUtils.checkEndings(Config.getProperty("templatePathString"));
-		timecardPathString = directoryRootPathString + FileUtils.checkEndings(Config.getProperty("timecardPathString"));
-		GOPPathString = directoryRootPathString + FileUtils.checkEndings(Config.getProperty("GOPPathString"));
+		directoryRootPathString = FileUtil.checkEndings(Config.getProperty("directoryRootPathString"));
+		templatePathString = directoryRootPathString + FileUtil.checkEndings(Config.getProperty("templatePathString"));
+		timecardPathString = directoryRootPathString + FileUtil.checkEndings(Config.getProperty("timecardPathString"));
+		GOPPathString = directoryRootPathString + FileUtil.checkEndings(Config.getProperty("GOPPathString"));
 		templateFileName = Config.getProperty("templateFileName");
+		templateRagruppatoFileName = Config.getProperty("templateRagruppatoFileName");
 		logbackFileName = Config.getProperty("logbackFileName");
 		templateFilePath = templatePathString + templateFileName;
+		templateRagruppatoFilePath = templatePathString + templateRagruppatoFileName;
 	}
 
 	private static void checkConfiguration() {
@@ -133,6 +152,7 @@ public class Timesheets {
 
 	private static void checkInitialDirs() {
 		template = new File(templateFilePath);
+		templateRagruppato = new File(templateRagruppatoFilePath);
 		timecards = new File(timecardPathString);
 		GOP = new File(GOPPathString);
 		if (!template.exists() || !template.isFile()) {

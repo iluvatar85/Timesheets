@@ -4,7 +4,7 @@ package it.casalena.util;
  * @author iluva
  *
  */
-public class FileUtils {
+public class FileUtil {
 
 	/**
 	 * Metodo statico che permette di garantire la presenza della barra finale nei

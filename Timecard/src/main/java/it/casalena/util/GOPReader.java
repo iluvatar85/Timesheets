@@ -16,8 +16,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.casalena.util.Constants;
-
 /**
  * @author iluva
  *
@@ -44,10 +42,10 @@ public class GOPReader {
 			HSSFSheet sheet = myWorkBook.getSheetAt(0);
 			nomeAttaccato = sheet.getRow(Constants.rigaNomeRisorsa).getCell(Constants.colonnaNomeRisorsa)
 					.getStringCellValue();
-			if(nomeAttaccato == null || "".equals(nomeAttaccato)) {
+			if (nomeAttaccato == null || "".equals(nomeAttaccato)) {
 				return nomeAttaccato;
 			}
-			nomeAttaccato = nomeAttaccato.replaceAll("\\s+","");
+			nomeAttaccato = nomeAttaccato.replaceAll("\\s+", "");
 			String[] words = nomeAttaccato.split("(?=[A-Z])");
 			for (int i = 0; i < words.length; i++) {
 				nome += words[i];
@@ -167,6 +165,7 @@ public class GOPReader {
 					cell = row.getCell(Constants.colonnaDataLavoro);
 					Date data = Constants.SDF.parse(cell.getStringCellValue());
 					cell = row.getCell(Constants.colonnaOreLavoro);
+
 					if (cell != null && !"".equals(cell.getStringCellValue())) {
 						Integer ore = Integer.parseInt(cell.getStringCellValue());
 						Calendar calData = new GregorianCalendar();
