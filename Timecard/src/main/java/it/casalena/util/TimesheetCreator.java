@@ -4,16 +4,23 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.casalena.bean.RisorsaRjc;
 
 /**
  * @author iluva
@@ -24,7 +31,75 @@ public class TimesheetCreator {
 	private static final Logger logger = LoggerFactory.getLogger(TimesheetCreator.class);
 
 	@SuppressWarnings("javadoc")
-	public static void createTimeSheetsRagruppato(File mese, File templateRagruppato, String annoString,
+	public static void createTimeSheetsRjc(List<RisorsaRjc> rjc, File templateRjc, String annoString,
+			String meseString) {
+		// TODO Auto-generated method stub
+		if (rjc == null) {
+			return;
+		}
+		String basePath = FileUtil.checkEndings(Config.getProperty("directoryRootPathString"))
+				+ FileUtil.checkEndings(Config.getProperty("timecardPathString"));
+		checkPath(basePath, annoString, meseString);
+
+		// Rendicontazione Mese Anno Anansi Team Nome Cognome
+		File presenze = new File(FileUtil.checkEndings(basePath) + FileUtil.checkEndings(annoString)
+				+ FileUtil.checkEndings(meseString) + "Presenze Colonica " + meseString + " " + annoString + ".xlsx");
+
+		XSSFWorkbook myWorkBook = null;
+		FileInputStream fsIP = null;
+		FileOutputStream output_file = null;
+		try {
+
+			if (!presenze.exists()) {
+				// copiare il file template nella posizione desiderata per poi modificarlo
+				FileUtils.copyFile(templateRjc, presenze);
+			}
+
+			fsIP = new FileInputStream(presenze);
+			myWorkBook = new XSSFWorkbook(fsIP);
+			XSSFSheet sheet = myWorkBook.getSheetAt(0);
+			int rowNum = Constants.rigaPresenzePartenza;
+			sheet.getRow(Constants.rigaPresenseMese).getCell(Constants.colonnaPresenzeMese)
+					.setCellValue(meseString.toUpperCase());
+			for (RisorsaRjc risorsa : rjc) {
+				XSSFRow row = sheet.getRow(rowNum++);
+				row.getCell(Constants.colonnaPresenzeCognome).setCellValue(risorsa.getNome());
+				XSSFCell giorniCell = row.getCell(Constants.colonnaPresenzeGiorni);
+				giorniCell.setCellValue(risorsa.getGiorni().floatValue());
+			}
+			XSSFFormulaEvaluator.evaluateAllFormulaCells(myWorkBook);
+			output_file = new FileOutputStream(presenze);
+			myWorkBook.write(output_file);
+			logger.info("Creo il file presenze " + presenze.getName());
+		} catch (Exception e) {
+			logger.error("Errore nella creazione del timesheet", e);
+		} finally {
+			if (fsIP != null) {
+				try {
+					fsIP.close();
+				} catch (Exception e) {
+					logger.error("Errore nella chiusura del FileInputStream", e);
+				}
+			}
+			if (myWorkBook != null) {
+				try {
+					myWorkBook.close();
+				} catch (Exception e) {
+					logger.error("Errore nella chiusura del workbook", e);
+				}
+			}
+			if (output_file != null) {
+				try {
+					output_file.close();
+				} catch (Exception e) {
+					logger.error("Errore nella chiusura del FileOutputStream", e);
+				}
+			}
+		}
+	}
+
+	@SuppressWarnings("javadoc")
+	public static List<RisorsaRjc> createTimeSheetsRagruppato(File mese, File templateRagruppato, String annoString,
 			String meseString) throws IOException {
 
 		String basePath = FileUtil.checkEndings(Config.getProperty("directoryRootPathString"))
@@ -43,6 +118,7 @@ public class TimesheetCreator {
 			FileUtils.copyFile(templateRagruppato, timesheet);
 
 		}
+		List<RisorsaRjc> risorse = new ArrayList<RisorsaRjc>();
 		int i = 0;
 		XSSFWorkbook myWorkBook = null;
 		FileInputStream fsIP = null;
@@ -78,12 +154,27 @@ public class TimesheetCreator {
 				} else {
 					sheet.getRow(Constants.rigaLivelloJunior).getCell(Constants.colonnaLivelloJunior).setCellValue("X");
 				}
+
+				BigDecimal oreTotali = new BigDecimal(0);
+
 				for (Entry<Calendar, Integer> entry : giorni.entrySet()) {
 					sheet.getRow(Constants.rigaTimesheetOreLavorate).getCell(entry.getKey().get(Calendar.DAY_OF_MONTH))
 							.setCellValue(entry.getValue());
+					oreTotali = oreTotali.add(new BigDecimal(entry.getValue()));
 				}
 				myWorkBook.setSheetName(myWorkBook.getSheetIndex(sheet), "Risorsa " + nomeRisorsa);
 				XSSFFormulaEvaluator.evaluateAllFormulaCells(myWorkBook);
+
+				if (!"87001187".equals(matricola)) {
+					RisorsaRjc risorsa = new RisorsaRjc();
+					risorsa.setNome(nomeRisorsa);
+					BigDecimal giorniRjc = new BigDecimal(0);
+					if (oreTotali.doubleValue() > 0) {
+						giorniRjc = oreTotali.divide(new BigDecimal(8), 2, BigDecimal.ROUND_HALF_UP);
+					}
+					risorsa.setGiorni(giorniRjc);
+					risorse.add(risorsa);
+				}
 
 				logger.info(
 						"Modifico il timesheet " + timesheet.getName() + " sulla base del file " + exportGOP.getName());
@@ -122,7 +213,7 @@ public class TimesheetCreator {
 				}
 			}
 		}
-
+		return risorse;
 	}
 
 	/**
@@ -182,7 +273,7 @@ public class TimesheetCreator {
 			XSSFFormulaEvaluator.evaluateAllFormulaCells(myWorkBook);
 			output_file = new FileOutputStream(timesheet);
 			myWorkBook.write(output_file);
-			logger.info("Creo il timesheet " + template.getName() + " sulla base del file " + exportGOP.getName());
+			logger.info("Creo il timesheet " + timesheet.getName() + " sulla base del file " + exportGOP.getName());
 		} catch (Exception e) {
 			logger.error("Errore nella creazione del timesheet", e);
 		} finally {

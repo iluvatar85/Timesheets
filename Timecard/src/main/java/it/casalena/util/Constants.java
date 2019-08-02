@@ -38,5 +38,10 @@ public class Constants {
 	public static final int rigaTimesheetOreLavorate = 13;
 	public static final int colonnaTimesheetDescrizione = 7;
 	public static final int colonnaTimesheetNome = 5;
+	public static final int rigaPresenzePartenza = 2;
+	public static final int colonnaPresenzeCognome = 0;
+	public static final int colonnaPresenzeGiorni = 1;
+	public static final int rigaPresenseMese = 0;
+	public static final int colonnaPresenzeMese = 1;
 
 }
